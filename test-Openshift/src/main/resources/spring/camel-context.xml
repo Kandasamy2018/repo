@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:camel="http://camel.apache.org/schema/spring"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+    xmlns:cxf="http://camel.apache.org/schema/cxf"
+    xmlns:soap="http://cxf.apache.org/bindings/soap"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd http://cxf.apache.org/bindings/soap http://cxf.apache.org/schemas/configuration/soap.xsd">
+      <cxf:rsServer address="/services/rest"
+        id="restservice" serviceClass="org.mycompany.service.RestService"/>
+    <bean class="org.mycompany.process.RestProcess" id="restProcess"/>
     <!-- Define a traditional camel context here -->
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
          <route id="_route1">
@@ -15,6 +19,17 @@
             <log id="_log3" message="Route is called"/>
             <log id="_log4" message="Route is called"/>
             <log id="_log5" message="Route is called"/>
+        </route>
+        <route id="_route3">
+            <from id="_from3" uri="cxfrs:bean:restservice?bindingStyle=SimpleConsumer"/>
+            <log id="_log6" message="Operation Name : ${header.operationName} "/>
+            <choice id="_choice1">
+                <when id="_when1">
+                    <simple>${header.operationName} == 'getService'</simple>
+                    <log id="_log7" message="Inside the Route"/>
+                    <bean id="_bean2" method="buildResponse" ref="restProcess"/>
+                </when>
+            </choice>
         </route>
     </camelContext>
 </beans>
